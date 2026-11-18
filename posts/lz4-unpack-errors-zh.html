@@ -27,4 +27,4 @@ lz4 -l big.log big.log.lz4       # legacy 格式，只有 lz4 自己认</code></
 <p><strong>Q：解压出来的文件比原文件小很多，是不是坏了？</strong> 先确认压缩前是否用 tar 打包（目录会被压成流）。若来源本身是 raw block，解压器可能只吐出了第一块。</p>
 <p><strong>Q：能不能只解压其中一部分？</strong> Frame 允许块独立（block independence 标志为 1），此时可以从任意块开始解码；若标志为 0，块之间有依赖，必须从头解。</p>
 <h2 id="六-判断顺序">六、判断顺序</h2>
-<p>看 magic → 确认 frame 还是 raw block → 确认是否 tar 包了一层 → 比对解压后哈希。四步里任意一步跳过，都会得到「工具坏了」的错误结论。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#lz4">lz4</a><a class="tag" href="/tags.html#compression">compression</a><a class="tag" href="/tags.html#reference">reference</a></p></main><footer class="site"><div class="wrap">EZ4 Blog · 静态博客 · 内容来自 content/articles</div></footer></body></html>
+<p>看 magic → 确认 frame 还是 raw block → 确认是否 tar 包了一层 → 比对解压后哈希。四步里任意一步跳过，都会得到「工具坏了」的错误结论。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#lz4">lz4</a><a class="tag" href="/tags.html#compression">compression</a><a class="tag" href="/tags.html#reference">reference</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
