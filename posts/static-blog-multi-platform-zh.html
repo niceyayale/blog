@@ -1,21 +1,45 @@
 <!doctype html>
-<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>把静态博客同时发布到五个免费平台：一份构建，五处上线</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">EZ4 Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>把静态博客同时发布到五个免费平台：一份构建，五处上线</h1><div class="meta">2026-11-19</div><article><h2 id="为什么要多处部署">为什么要多处部署</h2>
-<p>同一篇内容，放在不同域名下，能被不同的爬虫与推荐系统抓取；对个人博客来说，这比死守一个域名更划算。 关键是把「构建」和「发布」拆开：内容只写一遍，产物可以分发到任意多个静态托管。</p>
-<h2 id="五条通道与各自的做法">五条通道与各自的做法</h2>
-<p>| 通道 | 发布方式 | 备注 | |---|---|---| | GitHub Pages | 构建产物推到仓库，Pages 自动发布 | 需要公开仓库 | | Cloudflare Pages | <code>wrangler pages deploy &lt;dir&gt;</code> | 一条命令，秒级 | | Netlify | REST API 建站 + zip 部署 | 需要 Personal Access Token | | Render | 直接连 GitHub 仓库，Publish Directory 填 <code>.</code> | push 后自动重新部署 | | InfinityFree | 面板上传 zip 并解压 | 传统虚拟主机，只能走面板 |</p>
-<h2 id="一份构建脚本的关键点">一份构建脚本的关键点</h2>
-<ol>
-<li><strong>frontmatter 解析</strong>：标题、日期、标签、站点，尽量保持简单；不要为了排版引入重型依赖。</li>
-<li><strong>绝对链接要按站点生成</strong>：sitemap 与 RSS 里的域名必须跟目标站点一致，否则搜索引擎会当成重复内容。</li>
-<li><strong>产物要能独立运行</strong>：样式内联或用相对路径，避免依赖某个平台的默认行为。</li>
-</ol>
-<pre><code class="language-bash">node src/scripts/build-blog.js --out dist --base https://example.com --title &quot;My Blog&quot; --limit 20</code></pre>
-<h2 id="发布流水线">发布流水线</h2>
-<ul>
-<li>GitHub 仓库当作唯一事实来源；其它平台要么从它拉，要么由本地脚本推。</li>
-<li>Cloudflare、Netlify 用 CLI/API 直接推产物，失败可重试。</li>
-<li>Render 走 Git 集成，push 即部署，省一条命令。</li>
-<li>InfinityFree 这类面板型主机，用浏览器自动化把 zip 塞进上传框并调用面板自带的解压接口。</li>
-</ul>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>静态博客部署实战：一份构建，六个免费平台同步上线</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">EZ4 Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>静态博客部署实战：一份构建，六个免费平台同步上线</h1><div class="meta">2026-11-19</div><article><p>静态博客部署真正麻烦的地方，不是写页面，而是让同一份内容稳定地出现在多个托管平台上，并且每个平台的 canonical、sitemap、RSS 都指向它自己的域名。这篇文章记录我把自己这套博客同时推到六个平台的做法，包括踩过的坑和最后的取舍。</p>
+<h2 id="为什么值得做多平台部署">为什么值得做多平台部署</h2>
+<p>单一域名的风险很实在：某天平台改政策、免费额度收紧、或者账号被误判，整站就没了。把构建产物分发到多个静态托管后，任意一家出问题都只是少一个入口，内容和链接仍然在。</p>
+<p>另一个收益是抓取覆盖面。不同托管商的 CDN 节点、域名权重、抓取频率都不一样，同一篇内容放在 GitHub Pages 和 Cloudflare Pages 上，被搜索引擎发现的速度经常差好几天。</p>
+<h3 id="代价是什么">代价是什么</h3>
+<p>内容必须只维护一份，发布必须全自动，否则多一处就多一份维护成本。这也是我坚持用命令行而不是后台点击的原因：只有脚本能保证每次发布路径一致。</p>
+<h2 id="静态博客部署的六个平台分工">静态博客部署的六个平台分工</h2>
+<p>下面是我现在在用的组合，按上手难度从低到高排列。</p>
+<p>| 平台 | 发布方式 | 免费额度 | 适合场景 | |---|---|---|---| | GitHub Pages | git push 后自动构建 | 仓库公开即可 | 源站、其他平台的构建来源 | | Cloudflare Pages | wrangler pages deploy | 每月构建次数足够个人博客 | 主站、访问速度快 | | Netlify | REST API 上传 zip | 每月 100GB 流量 | 备份站、表单等附加功能 | | Render | 连 Git 仓库自动部署 | 免费实例会休眠 | 备用站、演示环境 | | InfinityFree | 面板上传 zip 解压 | 免费虚拟主机 | 传统主机形态的兜底 | | Firebase Hosting | firebase deploy | Spark 套餐 10GB 存储 | 海外访问、和 GCP 打通 |</p>
+<p><img alt="图 1：六个静态托管平台的发布方式与免费额度对照" src="https://cdn.jsdelivr.net/gh/niceyayale/blog@main/uploads/assets/static-blog-deploy-01-matrix.png" loading="lazy"></p>
+<p>这张表本身就是选型依据：能用命令行或 API 的优先，只能面板操作的最后上。</p>
+<h3 id="各平台的文档要先读">各平台的文档要先读</h3>
+<p>平台差异大多写在文档里。Firebase 的多站点配置见其托管文档，Cloudflare Pages 的构建环境说明也在官方文档中，Netlify 的部署 API 有完整的 zip 上传示例。先读一遍能省掉大量试错。</p>
+<h2 id="一份构建脚本要解决的三件事">一份构建脚本要解决的三件事</h2>
+<p>第一，产物要能独立运行。样式、脚本、图片全部相对路径或者可访问的绝对 URL，不能依赖任何平台的默认行为。</p>
+<p>第二，站点级元数据要按目标域名生成。sitemap.xml、rss.xml、canonical、og:url 里的域名必须和目标平台一致，否则搜索引擎会当成重复内容，多平台反而变成负资产。</p>
+<p>第三，构建要可重复。同一篇文章构建多次，产物必须完全一致，方便对比和回滚。</p>
+<p>我的构建命令大概是这个样子：</p>
+<pre><code class="language-bash">node src/scripts/build-blog.js \
+  --out var/_global/blog-fb \
+  --base https://bingblog-fb.web.app \
+  --title &quot;Bing Blog&quot; \
+  --limit 20</code></pre>
+<p><code>--base</code> 是唯一需要按平台变化的东西，其余参数保持一致，这样六次构建的差异只在于域名。</p>
+<h3 id="元数据最容易出错的地方">元数据最容易出错的地方</h3>
+<p>常见错误是只改了首页域名，忘了 sitemap 和 RSS。解决办法是把 base 作为构建参数传下去，让所有模板都从同一个变量取域名，而不是每处硬编码。</p>
+<h2 id="发布流水线怎么串起来">发布流水线怎么串起来</h2>
+<p>我的入口是一条命令，按顺序做四件事：构建、推 GitHub、部署 Cloudflare 和 Netlify、部署 Firebase。任何一步失败都不影响其他平台，脚本会继续跑完并汇总结果。</p>
+<p>GitHub 仓库在这里承担两个角色：既是 GitHub Pages 的源站，也是其他平台构建产物的分发点。Render 直接连这个仓库，push 之后就自动重新部署，不需要额外命令。</p>
+<p>InfinityFree 这类只提供面板的主机是唯一的例外，需要用浏览器自动化把 zip 传上去再解压。</p>
+<h2 id="内容质量比部署更重要">内容质量比部署更重要</h2>
+<p>多平台分发会放大内容问题。一篇水文发到一个站只是浪费一次机会，发到六个站就是把低质内容铺满搜索结果，反而拉低整站权重。</p>
+<p>所以我现在给发布流程加了一道前置检查：字数、段落数、小标题数、代码块、图片数量按平台分别卡线，再跑一次内容质量评分，不达标就不允许发。评分维度包括标题、结构、内容密度、搜索意图匹配、可信度和软文程度，其中篇幅不足目标一半会直接否决。</p>
+<h3 id="各平台的字数门槛">各平台的字数门槛</h3>
+<p>参考国内三个内容平台的实际要求：掘金建议 1500 字以上，CSDN 建议 1200 字以上并带配图，知乎建议 900 字以上但更看重开头几段的信息密度。海外平台相对宽松，Dev.to 和 Hashnode 八百字左右即可。</p>
+<h2 id="常见问题">常见问题</h2>
+<h3 id="多平台发布会被判重复内容吗">多平台发布会被判重复内容吗</h3>
+<p>会，如果 canonical 处理不当。每个平台都必须声明自己的 canonical，让搜索引擎把其他域名上的同一篇内容视为副本。</p>
+<h3 id="免费额度够用吗">免费额度够用吗</h3>
+<p>个人博客的量级基本够。真正会超的是构建次数和带宽，前者靠减少无谓的重新构建，后者靠图片压缩和 CDN 缓存。</p>
+<h3 id="需要自建服务器吗">需要自建服务器吗</h3>
+<p>不需要。静态站的全部计算都在构建阶段完成，托管商只负责发文件，这是它比动态站省心的根本原因。</p>
 <h2 id="小结">小结</h2>
-<p>多平台发布真正的成本不在部署，而在「内容格式统一」和「链接一致性」。把这两件事收紧，剩下的都是几条命令的事。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#static-site">static-site</a><a class="tag" href="/tags.html#deploy">deploy</a><a class="tag" href="/tags.html#netlify">netlify</a><a class="tag" href="/tags.html#cloudflare">cloudflare</a><a class="tag" href="/tags.html#render">render</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
+<p>静态博客部署的核心是把构建和发布彻底解耦：内容只写一遍，产物按平台重新生成元数据，发布交给命令。做到这三点，多一个平台只是多一行命令的事。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#static-site">static-site</a><a class="tag" href="/tags.html#deploy">deploy</a><a class="tag" href="/tags.html#netlify">netlify</a><a class="tag" href="/tags.html#cloudflare">cloudflare</a><a class="tag" href="/tags.html#firebase">firebase</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
