@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>把静态博客同时发布到五个免费平台：一份构建，五处上线</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">EZ4 Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>把静态博客同时发布到五个免费平台：一份构建，五处上线</h1><div class="meta">2026-11-19</div><article><h2 id="为什么要多处部署">为什么要多处部署</h2>
+<p>同一篇内容，放在不同域名下，能被不同的爬虫与推荐系统抓取；对个人博客来说，这比死守一个域名更划算。 关键是把「构建」和「发布」拆开：内容只写一遍，产物可以分发到任意多个静态托管。</p>
+<h2 id="五条通道与各自的做法">五条通道与各自的做法</h2>
+<p>| 通道 | 发布方式 | 备注 | |---|---|---| | GitHub Pages | 构建产物推到仓库，Pages 自动发布 | 需要公开仓库 | | Cloudflare Pages | <code>wrangler pages deploy &lt;dir&gt;</code> | 一条命令，秒级 | | Netlify | REST API 建站 + zip 部署 | 需要 Personal Access Token | | Render | 直接连 GitHub 仓库，Publish Directory 填 <code>.</code> | push 后自动重新部署 | | InfinityFree | 面板上传 zip 并解压 | 传统虚拟主机，只能走面板 |</p>
+<h2 id="一份构建脚本的关键点">一份构建脚本的关键点</h2>
+<ol>
+<li><strong>frontmatter 解析</strong>：标题、日期、标签、站点，尽量保持简单；不要为了排版引入重型依赖。</li>
+<li><strong>绝对链接要按站点生成</strong>：sitemap 与 RSS 里的域名必须跟目标站点一致，否则搜索引擎会当成重复内容。</li>
+<li><strong>产物要能独立运行</strong>：样式内联或用相对路径，避免依赖某个平台的默认行为。</li>
+</ol>
+<pre><code class="language-bash">node src/scripts/build-blog.js --out dist --base https://example.com --title &quot;My Blog&quot; --limit 20</code></pre>
+<h2 id="发布流水线">发布流水线</h2>
+<ul>
+<li>GitHub 仓库当作唯一事实来源；其它平台要么从它拉，要么由本地脚本推。</li>
+<li>Cloudflare、Netlify 用 CLI/API 直接推产物，失败可重试。</li>
+<li>Render 走 Git 集成，push 即部署，省一条命令。</li>
+<li>InfinityFree 这类面板型主机，用浏览器自动化把 zip 塞进上传框并调用面板自带的解压接口。</li>
+</ul>
+<h2 id="小结">小结</h2>
+<p>多平台发布真正的成本不在部署，而在「内容格式统一」和「链接一致性」。把这两件事收紧，剩下的都是几条命令的事。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#static-site">static-site</a><a class="tag" href="/tags.html#deploy">deploy</a><a class="tag" href="/tags.html#netlify">netlify</a><a class="tag" href="/tags.html#cloudflare">cloudflare</a><a class="tag" href="/tags.html#render">render</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
