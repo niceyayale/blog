@@ -55,7 +55,12 @@ console.log(encodeURIComponent(q)); // tom%20%26%20jerry%20%2F%20100%25</code></
 <li><strong>Signatures and message authentication</strong>, when combined with a secret key</li>
 </ul>
 <p>Common algorithms and their status:</p>
-<p>| Algorithm | Output | Notes | |---|---|---| | MD5 | 128-bit | Broken for collision resistance; use only for non-security checksums | | SHA-1 | 160-bit | Deprecated for security use; collisions have been demonstrated | | SHA-256 | 256-bit | Widely used and appropriate for integrity checks | | SHA-512 | 512-bit | Longer digest; useful where the extra length matters |</p>
+<table><thead><tr><th>Algorithm</th><th>Output</th><th>Notes</th></tr></thead><tbody>
+<tr><td>MD5</td><td>128-bit</td><td>Broken for collision resistance; use only for non-security checksums</td></tr>
+<tr><td>SHA-1</td><td>160-bit</td><td>Deprecated for security use; collisions have been demonstrated</td></tr>
+<tr><td>SHA-256</td><td>256-bit</td><td>Widely used and appropriate for integrity checks</td></tr>
+<tr><td>SHA-512</td><td>512-bit</td><td>Longer digest; useful where the extra length matters</td></tr>
+</tbody></table>
 <p>A SHA-256 example in Node.js:</p>
 <pre><code class="language-js">import { createHash } from 'crypto';
 const digest = createHash('sha256').update('hello').digest('hex');

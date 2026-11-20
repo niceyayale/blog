@@ -3,7 +3,12 @@
 <p>一次 500 人的线上分享里，讲师端一切正常，观众端画面比声音慢约 1.4 秒，评论区刷成一片。事后复盘发现，编码参数、网络带宽、服务器都在正常区间，问题出在接收端的 jitter buffer：丢包率 0.3%，但到达间隔抖动 68 ms，缓冲区被撑到 240 ms 以上，叠加两跳转发后稳定滞后。这个案例说明一件事：WebRTC 延迟不是单一指标，只盯一个数字永远定位不到根因。</p>
 <h2 id="一-先把延迟拆成四段">一、先把延迟拆成四段</h2>
 <p>端到端延迟 = 采集编码 + 网络传输 + 抖动缓冲 + 解码渲染。每一段的量级和观测手段都不同，混在一起看只会得出「网络不好」这种无用结论。</p>
-<p>| 环节 | 典型值 | 观测手段 | 超标信号 | |---|---|---|---| | 采集 + 编码 | 30–80 ms | <code>framesEncoded</code>、<code>totalEncodeTime</code> | 编码队列持续增长 | | 网络传输 | 20–150 ms | <code>currentRoundTripTime</code>、<code>packetsLost</code> | RTT 抖动 &gt; 50 ms | | 抖动缓冲 | 20–200 ms | <code>jitterBufferDelay</code>、<code>jitterBufferEmittedCount</code> | 单值 &gt; 200 ms | | 解码渲染 | 10–50 ms | <code>framesDecoded</code>、<code>freezeCount</code> | 卡顿计数递增 |</p>
+<table><thead><tr><th>环节</th><th>典型值</th><th>观测手段</th><th>超标信号</th></tr></thead><tbody>
+<tr><td>采集 + 编码</td><td>30–80 ms</td><td><code>framesEncoded</code>、<code>totalEncodeTime</code></td><td>编码队列持续增长</td></tr>
+<tr><td>网络传输</td><td>20–150 ms</td><td><code>currentRoundTripTime</code>、<code>packetsLost</code></td><td>RTT 抖动 &gt; 50 ms</td></tr>
+<tr><td>抖动缓冲</td><td>20–200 ms</td><td><code>jitterBufferDelay</code>、<code>jitterBufferEmittedCount</code></td><td>单值 &gt; 200 ms</td></tr>
+<tr><td>解码渲染</td><td>10–50 ms</td><td><code>framesDecoded</code>、<code>freezeCount</code></td><td>卡顿计数递增</td></tr>
+</tbody></table>
 <h2 id="二-用-getstats-定点取样">二、用 getStats 定点取样</h2>
 <p>不要用肉眼判断卡顿。WebRTC 的标准统计接口是 <code>RTCPeerConnection.getStats()</code>，W3C 的 WebRTC 1.0 规范（w3c.github.io/webrtc-pc）定义了字段含义，Chromium 与 Firefox 都已实现。取样时按 1 秒一轮、连续 30 轮，才能看出趋势而不是瞬时噪声：</p>
 <pre><code class="language-js">const pc = new RTCPeerConnection(config);
@@ -49,7 +54,11 @@ sudo tc qdisc del dev lo root</code></pre>
 <p><strong>Q：TURN 中继一定会增加延迟吗？</strong> 会增加一跳 RTT 与被中继链路的带宽上限，但如果直连质量差，中继反而更稳定。判断依据是 candidate-pair 的类型与实测 RTT，而不是猜测。</p>
 <h2 id="六-把观测做成可对比的序列">六、把观测做成可对比的序列</h2>
 <p>定位一次线上问题靠的是「同一份指标、两个时间点」的对比，所以采集口径要先统一：</p>
-<p>| 场景 | 采样频率 | 建议留存 | 用途 | |---|---|---|---| | 日常巡检 | 1 秒 × 30 轮 | 最近 24 小时 | 发现持续劣化 | | 用户报障复现 | 250 毫秒 × 120 轮 | 单次事件包 | 抓瞬时抖动 | | 版本对比 | 发布前后各 10 分钟 | 两份完整序列 | 判断是否回归 |</p>
+<table><thead><tr><th>场景</th><th>采样频率</th><th>建议留存</th><th>用途</th></tr></thead><tbody>
+<tr><td>日常巡检</td><td>1 秒 × 30 轮</td><td>最近 24 小时</td><td>发现持续劣化</td></tr>
+<tr><td>用户报障复现</td><td>250 毫秒 × 120 轮</td><td>单次事件包</td><td>抓瞬时抖动</td></tr>
+<tr><td>版本对比</td><td>发布前后各 10 分钟</td><td>两份完整序列</td><td>判断是否回归</td></tr>
+</tbody></table>
 <p>采集端只记录六个字段：<code>currentRoundTripTime</code>、<code>packetsLost</code>/<code>packetsReceived</code>、<code>jitter</code>、<code>jitterBufferDelay</code>/<code>jitterBufferEmittedCount</code>、<code>framesDecoded</code> 的增速、<code>totalEncodeTime</code>。字段越少，跨版本对比越可靠；把整份 getStats 原样落库，反而会因为字段增删让历史数据失去可比性。</p>
 <p>留存时把「地区、网络类型、版本号」一起打标，才能把同类用户的问题聚到一起，否则手里的只是一段段孤立会话，判断不出是个例还是普遍回归；给结论时也只引用同口径打标后的对比数据。</p>
 <h2 id="七-处置顺序">七、处置顺序</h2>

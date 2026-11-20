@@ -2,7 +2,11 @@
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LZ4 解压失败怎么排查：Frame、Block 与三种报错的对照表</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">EZ4 Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>LZ4 解压失败怎么排查：Frame、Block 与三种报错的对照表</h1><div class="meta">2026-11-18</div><article><h1 id="lz4-解压失败怎么排查-frame-block-与三种报错的对照表">LZ4 解压失败怎么排查：Frame、Block 与三种报错的对照表</h1>
 <p>同事丢来一个 .lz4 文件，LZ4 解压时双击没反应，7-Zip 打开报「不支持的压缩方法」，命令行 lz4 又提示 magic number 不对。这类问题九成不是文件坏了，而是解压工具假设了错误的格式层次。LZ4 有两种合法封装（frame 与 raw block），还允许在文件里混入可跳过的附加段，认错一层就会报错。下面把三种最常见报错和对应处理写清楚。</p>
 <h2 id="一-先认清两层格式">一、先认清两层格式</h2>
-<p>| 层次 | 起始标识 | 典型来源 | 能否直接解压 | |---|---|---|---| | LZ4 Frame | 4 字节 magic <code>04 22 4D 18</code> | lz4 CLI、多数归档工具 | 可以，按 frame 解析 | | LZ4 Raw Block | 无 magic，直接是数据 | 应用内嵌压缩（如部分数据库/游戏资源） | 不可以，需要块大小与解压后长度 | | Skippable Frame | magic <code>50 2A 4D 18</code> + 4 字节长度 | 允许工具附加元数据 | 跳过该段继续解 |</p>
+<table><thead><tr><th>层次</th><th>起始标识</th><th>典型来源</th><th>能否直接解压</th></tr></thead><tbody>
+<tr><td>LZ4 Frame</td><td>4 字节 magic <code>04 22 4D 18</code></td><td>lz4 CLI、多数归档工具</td><td>可以，按 frame 解析</td></tr>
+<tr><td>LZ4 Raw Block</td><td>无 magic，直接是数据</td><td>应用内嵌压缩（如部分数据库/游戏资源）</td><td>不可以，需要块大小与解压后长度</td></tr>
+<tr><td>Skippable Frame</td><td>magic <code>50 2A 4D 18</code> + 4 字节长度</td><td>允许工具附加元数据</td><td>跳过该段继续解</td></tr>
+</tbody></table>
 <p>Frame 格式由 LZ4 官方规范定义（github.com/lz4/lz4 的 doc/lz4_Frame_format.md），头部包含版本、块独立性标志、最大块大小与可选的 content size、字典 ID、校验和。raw block 没有任何自描述信息，必须由调用方告知每块压缩后与解压后的长度。</p>
 <h2 id="二-lz4-解压的三种报错与处理">二、LZ4 解压的三种报错与处理</h2>
 <h3 id="1-error-66-unsupported-frame-descriptor">1. Error 66: Unsupported frame descriptor</h3>

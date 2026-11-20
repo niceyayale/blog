@@ -81,7 +81,11 @@
 <p>For unmanaged plans, support usually covers the host and network, not your application. That is normal, but it means the operational burden is yours. Managed plans cost more; decide whether the difference is worth it for your team.</p>
 <h2 id="comparing-vps-hosting-plans-side-by-side">Comparing VPS Hosting Plans Side by Side</h2>
 <p>The table below shows why headline specifications can hide real differences. All three plans list plausible numbers; the measured disk result separates them.</p>
-<p>| Plan | vCPU | RAM | Disk | Port | Transfer | Measured 4K IOPS | |---|---|---|---|---|---|---| | A | 4 | 8 GB | local NVMe | 1 Gbps | 4 TB | 48,000 | | B | 4 | 8 GB | network SSD | 1 Gbps | 4 TB | 9,500 | | C | 2 | 4 GB | local NVMe | 500 Mbps | 2 TB | 31,000 |</p>
+<table><thead><tr><th>Plan</th><th>vCPU</th><th>RAM</th><th>Disk</th><th>Port</th><th>Transfer</th><th>Measured 4K IOPS</th></tr></thead><tbody>
+<tr><td>A</td><td>4</td><td>8 GB</td><td>local NVMe</td><td>1 Gbps</td><td>4 TB</td><td>48,000</td></tr>
+<tr><td>B</td><td>4</td><td>8 GB</td><td>network SSD</td><td>1 Gbps</td><td>4 TB</td><td>9,500</td></tr>
+<tr><td>C</td><td>2</td><td>4 GB</td><td>local NVMe</td><td>500 Mbps</td><td>2 TB</td><td>31,000</td></tr>
+</tbody></table>
 <p>Plan B has the same vCPU count and RAM as Plan A, but a database on B will wait on storage far more often. Plan C has fewer cores and half the RAM, yet its local disk makes it a better fit for a small database than Plan B.</p>
 <h2 id="a-repeatable-comparison-method">A Repeatable Comparison Method</h2>
 <p>Instead of comparing marketing tables side by side, use a small, consistent test:</p>

@@ -97,7 +97,12 @@ MaxDirectoryRecursion 15</code></pre>
 <hr>
 <h2 id="comparing-enterprise-security-scanning-tools">Comparing Enterprise Security Scanning Tools</h2>
 <p>When selecting a trojan scanner for enterprise environments, administrators must balance detection accuracy, system overhead, and ease of automation. The table below compares four widely deployed security tools.</p>
-<p>| Tool Name | Primary Detection Method | Best Suited For | License | Resource Footprint | | :--- | :--- | :--- | :--- | :--- | | <strong>ClamAV (v1.3.0)</strong> | Signature &amp; Heuristics | Mail servers, file uploads, general storage | GPLv2 | Moderate to High (during active scans) | | <strong>YARA (v4.5.1)</strong> | Pattern Matching &amp; Rules | Incident response, custom threat intelligence | BSD 3-Clause | Low (highly targeted scans) | | <strong>Lynis (v3.0.9)</strong> | System Auditing &amp; Hardening | Security compliance, configuration review | GPLv3 | Extremely Low (runs in seconds) | | <strong>Rkhunter (v1.4.6)</strong> | System Binary Integrity Checking | Rootkit and local backdoor detection | GPLv2 | Low (runs as a daily cron job) |</p>
+<table><thead><tr><th>Tool Name</th><th>Primary Detection Method</th><th>Best Suited For</th><th>License</th><th>Resource Footprint</th></tr></thead><tbody>
+<tr><td><strong>ClamAV (v1.3.0)</strong></td><td>Signature &amp; Heuristics</td><td>Mail servers, file uploads, general storage</td><td>GPLv2</td><td>Moderate to High (during active scans)</td></tr>
+<tr><td><strong>YARA (v4.5.1)</strong></td><td>Pattern Matching &amp; Rules</td><td>Incident response, custom threat intelligence</td><td>BSD 3-Clause</td><td>Low (highly targeted scans)</td></tr>
+<tr><td><strong>Lynis (v3.0.9)</strong></td><td>System Auditing &amp; Hardening</td><td>Security compliance, configuration review</td><td>GPLv3</td><td>Extremely Low (runs in seconds)</td></tr>
+<tr><td><strong>Rkhunter (v1.4.6)</strong></td><td>System Binary Integrity Checking</td><td>Rootkit and local backdoor detection</td><td>GPLv2</td><td>Low (runs as a daily cron job)</td></tr>
+</tbody></table>
 <p>While ClamAV and YARA focus directly on analyzing files for malicious code, tools like Lynis and Rkhunter focus on system state. Using these tools in tandem provides a multi-layered defense. For instance, while ClamAV scans user-uploaded assets, Rkhunter ensures that core system binaries have not been replaced or modified by kernel-level trojans.</p>
 <hr>
 <h2 id="advanced-detection-memory-analysis-and-network-monitoring">Advanced Detection: Memory Analysis and Network Monitoring</h2>

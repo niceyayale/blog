@@ -7,7 +7,13 @@
 <p><strong>行为分析</strong>：监控进程创建、注册表修改、网络连接等行为。Windows Defender 的 AMSI（Antimalware Scan Interface）API 可在文件写入磁盘前拦截可疑操作。</p>
 <p><strong>启发式检测</strong>：基于静态分析和动态沙箱环境，识别未知变体。例如卡巴斯基的 Heuristics 引擎会分析 PE 文件的节区熵值，当熵值超过 7.5 时标记为可疑。</p>
 <h2 id="主流木马查杀工具对比">主流木马查杀工具对比</h2>
-<p>| 工具名称 | 最新版本 | 引擎类型 | 免费/付费 | 适用场景 | |---------|---------|---------|----------|---------| | Microsoft Defender | 4.18.23110.812 | 多引擎混合 | 免费（Windows 10/11 内置） | 日常防护 | | ClamAV | 0.104.0 | 特征码 | 免费开源 | 服务器/批量扫描 | | Kaspersky Rescue Disk | 14.0.2.0 | 多引擎+沙箱 | 免费（ISO 镜像） | 系统已崩溃时救援 | | Malwarebytes | 4.6.12.2925 | 行为+特征码 | 免费版+付费版 | 二次查杀 | | ESET Online Scanner | 1.12.0 | 启发式 | 免费单次扫描 | 快速排查 |</p>
+<table><thead><tr><th>工具名称</th><th>最新版本</th><th>引擎类型</th><th>免费/付费</th><th>适用场景</th></tr></thead><tbody>
+<tr><td>Microsoft Defender</td><td>4.18.23110.812</td><td>多引擎混合</td><td>免费（Windows 10/11 内置）</td><td>日常防护</td></tr>
+<tr><td>ClamAV</td><td>0.104.0</td><td>特征码</td><td>免费开源</td><td>服务器/批量扫描</td></tr>
+<tr><td>Kaspersky Rescue Disk</td><td>14.0.2.0</td><td>多引擎+沙箱</td><td>免费（ISO 镜像）</td><td>系统已崩溃时救援</td></tr>
+<tr><td>Malwarebytes</td><td>4.6.12.2925</td><td>行为+特征码</td><td>免费版+付费版</td><td>二次查杀</td></tr>
+<tr><td>ESET Online Scanner</td><td>1.12.0</td><td>启发式</td><td>免费单次扫描</td><td>快速排查</td></tr>
+</tbody></table>
 <p>微软官方文档对 Windows Defender 的实时保护机制有详细说明，可参考 <a href="https://learn.microsoft.com/en-us/windows/security/">Microsoft Learn - Windows Security</a> 获取技术白皮书。</p>
 <h3 id="clamav-命令行实战">ClamAV 命令行实战</h3>
 <p>对于 Linux 服务器或需要脚本化扫描的场景，ClamAV 是首选。安装完成后，常用命令如下：</p>

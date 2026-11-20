@@ -7,7 +7,14 @@
 <p>内容必须只维护一份，发布必须全自动，否则多一处就多一份维护成本。这也是我坚持用命令行而不是后台点击的原因：只有脚本能保证每次发布路径一致。</p>
 <h2 id="静态博客部署的六个平台分工">静态博客部署的六个平台分工</h2>
 <p>下面是我现在在用的组合，按上手难度从低到高排列。</p>
-<p>| 平台 | 发布方式 | 免费额度 | 适合场景 | |---|---|---|---| | GitHub Pages | git push 后自动构建 | 仓库公开即可 | 源站、其他平台的构建来源 | | Cloudflare Pages | wrangler pages deploy | 每月构建次数足够个人博客 | 主站、访问速度快 | | Netlify | REST API 上传 zip | 每月 100GB 流量 | 备份站、表单等附加功能 | | Render | 连 Git 仓库自动部署 | 免费实例会休眠 | 备用站、演示环境 | | InfinityFree | 面板上传 zip 解压 | 免费虚拟主机 | 传统主机形态的兜底 | | Firebase Hosting | firebase deploy | Spark 套餐 10GB 存储 | 海外访问、和 GCP 打通 |</p>
+<table><thead><tr><th>平台</th><th>发布方式</th><th>免费额度</th><th>适合场景</th></tr></thead><tbody>
+<tr><td>GitHub Pages</td><td>git push 后自动构建</td><td>仓库公开即可</td><td>源站、其他平台的构建来源</td></tr>
+<tr><td>Cloudflare Pages</td><td>wrangler pages deploy</td><td>每月构建次数足够个人博客</td><td>主站、访问速度快</td></tr>
+<tr><td>Netlify</td><td>REST API 上传 zip</td><td>每月 100GB 流量</td><td>备份站、表单等附加功能</td></tr>
+<tr><td>Render</td><td>连 Git 仓库自动部署</td><td>免费实例会休眠</td><td>备用站、演示环境</td></tr>
+<tr><td>InfinityFree</td><td>面板上传 zip 解压</td><td>免费虚拟主机</td><td>传统主机形态的兜底</td></tr>
+<tr><td>Firebase Hosting</td><td>firebase deploy</td><td>Spark 套餐 10GB 存储</td><td>海外访问、和 GCP 打通</td></tr>
+</tbody></table>
 <p><img alt="图 1：六个静态托管平台的发布方式与免费额度对照" src="https://cdn.jsdelivr.net/gh/niceyayale/blog@main/uploads/assets/static-blog-deploy-01-matrix.png" loading="lazy"></p>
 <p>这张表本身就是选型依据：能用命令行或 API 的优先，只能面板操作的最后上。</p>
 <h3 id="各平台的文档要先读">各平台的文档要先读</h3>

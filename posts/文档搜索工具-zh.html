@@ -19,7 +19,13 @@ java -jar tika-app-2.9.1.jar -t document.pdf &gt; output.txt
 # 提取元数据
 java -jar tika-app-2.9.1.jar -m document.pdf</code></pre>
 <p>各工具对格式的支持程度不同：</p>
-<p>| 工具 | PDF | DOCX | XLSX | 图片 OCR | 扫描件 | |------|-----|------|------|----------|--------| | Elasticsearch + Tika | ✅ | ✅ | ✅ | ❌ (需外挂) | ❌ | | Meilisearch | ✅ | ✅ | ✅ | ❌ | ❌ | | Typesense | ✅ | ✅ | ✅ | ❌ | ❌ | | OpenSearch | ✅ | ✅ | ✅ | ❌ (需外挂) | ❌ | | Apache Solr | ✅ | ✅ | ✅ | ❌ (需外挂) | ❌ |</p>
+<table><thead><tr><th>工具</th><th>PDF</th><th>DOCX</th><th>XLSX</th><th>图片 OCR</th><th>扫描件</th></tr></thead><tbody>
+<tr><td>Elasticsearch + Tika</td><td>✅</td><td>✅</td><td>✅</td><td>❌ (需外挂)</td><td>❌</td></tr>
+<tr><td>Meilisearch</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>Typesense</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+<tr><td>OpenSearch</td><td>✅</td><td>✅</td><td>✅</td><td>❌ (需外挂)</td><td>❌</td></tr>
+<tr><td>Apache Solr</td><td>✅</td><td>✅</td><td>✅</td><td>❌ (需外挂)</td><td>❌</td></tr>
+</tbody></table>
 <p>如果需要处理扫描件或图片中的文字，需要在解析阶段外挂 OCR 引擎，如 Tesseract（5.3.x 版本）或 PaddleOCR（2.7.0）。</p>
 <h2 id="主流文档搜索工具对比">主流文档搜索工具对比</h2>
 <p>以下是五个主流开源方案的详细对比。</p>
@@ -84,7 +90,14 @@ docker run -p 8108:8108 -v $(pwd)/data:/data \
   &lt;/analyzer&gt;
 &lt;/analysis&gt;</code></pre>
 <h3 id="选型决策矩阵">选型决策矩阵</h3>
-<p>| 评估维度 | Elasticsearch | OpenSearch | Meilisearch | Typesense | Solr | |----------|--------------|------------|-------------|-----------|------| | 部署复杂度 | 高 | 高 | 低 | 低 | 中 | | 查询灵活性 | ★★★★★ | ★★★★★ | ★★★ | ★★★★ | ★★★★★ | | 中文分词支持 | 需插件 | 需插件 | 需配置 | 需配置 | 内置 | | 语义搜索 | 8.x 支持 | 2.x 支持 | ❌ | ❌ | ❌ | | 集群扩展 | 成熟 | 成熟 | 有限 | 有限 | 成熟 | | 许可证 | SSPL/AGPL | Apache 2.0 | MIT | MIT | Apache 2.0 |</p>
+<table><thead><tr><th>评估维度</th><th>Elasticsearch</th><th>OpenSearch</th><th>Meilisearch</th><th>Typesense</th><th>Solr</th></tr></thead><tbody>
+<tr><td>部署复杂度</td><td>高</td><td>高</td><td>低</td><td>低</td><td>中</td></tr>
+<tr><td>查询灵活性</td><td>★★★★★</td><td>★★★★★</td><td>★★★</td><td>★★★★</td><td>★★★★★</td></tr>
+<tr><td>中文分词支持</td><td>需插件</td><td>需插件</td><td>需配置</td><td>需配置</td><td>内置</td></tr>
+<tr><td>语义搜索</td><td>8.x 支持</td><td>2.x 支持</td><td>❌</td><td>❌</td><td>❌</td></tr>
+<tr><td>集群扩展</td><td>成熟</td><td>成熟</td><td>有限</td><td>有限</td><td>成熟</td></tr>
+<tr><td>许可证</td><td>SSPL/AGPL</td><td>Apache 2.0</td><td>MIT</td><td>MIT</td><td>Apache 2.0</td></tr>
+</tbody></table>
 <h2 id="部署与配置实践">部署与配置实践</h2>
 <h3 id="中文分词配置">中文分词配置</h3>
 <p>中文搜索效果很大程度上取决于分词质量。以 Elasticsearch 为例，安装 IK 分词器插件：</p>
