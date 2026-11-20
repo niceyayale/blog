@@ -47,5 +47,10 @@ sudo tc qdisc del dev lo root</code></pre>
 <p><strong>Q：只测一次 getStats 为什么不够？</strong> 单次取样只能看到瞬时值，丢包与抖动都是统计量，1 秒一轮连续 30 轮才能区分偶发与持续劣化。</p>
 <p><strong>Q：RTT 正常但画面仍然卡，先查哪里？</strong> 查接收端 jitter buffer 与解码耗时。RTT 只覆盖网络往返，不包含缓冲与渲染，这两段加起来经常超过 300 ms。</p>
 <p><strong>Q：TURN 中继一定会增加延迟吗？</strong> 会增加一跳 RTT 与被中继链路的带宽上限，但如果直连质量差，中继反而更稳定。判断依据是 candidate-pair 的类型与实测 RTT，而不是猜测。</p>
-<h2 id="六-处置顺序">六、处置顺序</h2>
+<h2 id="六-把观测做成可对比的序列">六、把观测做成可对比的序列</h2>
+<p>定位一次线上问题靠的是「同一份指标、两个时间点」的对比，所以采集口径要先统一：</p>
+<p>| 场景 | 采样频率 | 建议留存 | 用途 | |---|---|---|---| | 日常巡检 | 1 秒 × 30 轮 | 最近 24 小时 | 发现持续劣化 | | 用户报障复现 | 250 毫秒 × 120 轮 | 单次事件包 | 抓瞬时抖动 | | 版本对比 | 发布前后各 10 分钟 | 两份完整序列 | 判断是否回归 |</p>
+<p>采集端只记录六个字段：<code>currentRoundTripTime</code>、<code>packetsLost</code>/<code>packetsReceived</code>、<code>jitter</code>、<code>jitterBufferDelay</code>/<code>jitterBufferEmittedCount</code>、<code>framesDecoded</code> 的增速、<code>totalEncodeTime</code>。字段越少，跨版本对比越可靠；把整份 getStats 原样落库，反而会因为字段增删让历史数据失去可比性。</p>
+<p>留存时把「地区、网络类型、版本号」一起打标，才能把同类用户的问题聚到一起，否则手里的只是一段段孤立会话，判断不出是个例还是普遍回归；给结论时也只引用同口径打标后的对比数据。</p>
+<h2 id="七-处置顺序">七、处置顺序</h2>
 <p>按「先确认哪一段超标，再动对应开关」的顺序处理：RTT 超标先查候选对与中继；丢包超标先查无线与拥塞控制；jitter buffer 超标先查抖动来源，再考虑是否允许更激进的自适应；解码卡顿先降分辨率。把六个观测点做成一张每次发布会看的看板，比事后翻日志高效得多。需要浏览器侧的连通性初筛时，可以用 ez4code.com 的 WebRTC 检测页先确认候选对能否建立，再进入上面的逐段排查。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#webrtc">webrtc</a><a class="tag" href="/tags.html#debugging">debugging</a><a class="tag" href="/tags.html#performance">performance</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
