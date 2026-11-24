@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>木马查杀？快速就能上手的6种方法</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">EZ4 Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>木马查杀？快速就能上手的6种方法</h1><div class="meta">2026-11-24</div><article><h1 id="木马查杀-快速就能上手的6种方法">木马查杀？快速就能上手的6种方法</h1>
+<p>木马查杀的最短路径是：Windows 用户直接跑一次 Windows Defender 全盘扫描（约 45–90 分钟），Linux 用户跑一次 clamscan 全盘扫描，两者都能覆盖 90% 以上的常见木马。如果不想装任何软件，也可以用在线木马查杀工具，把可疑文件直接上传分析，5 分钟内出结果。下面这 6 种方法可以独立使用，也可以组合使用。</p>
+<h2 id="6-种方法">6 种方法</h2>
+<h3 id="方法-1-windows-defender-全盘扫描-系统自带">方法 1：Windows Defender 全盘扫描（系统自带）</h3>
+<p>Windows 10 与 Windows 11 都内置了 Windows Defender，不需要额外安装。</p>
+<ol>
+<li>按 <code>Win + I</code> 打开「设置」，进入「隐私和安全性」→「Windows 安全中心」。</li>
+<li>点击「病毒和威胁防护」→「扫描选项」。</li>
+<li>选择「完全扫描」（不是「快速扫描」），点击「立即扫描」。</li>
+<li>等待扫描结束。以一台 500 GB 硬盘、约 15 万个文件的笔记本为例，完全扫描耗时通常在 45–90 分钟之间。</li>
+<li>扫描结束后，在「保护历史记录」中查看被隔离的文件。隔离区默认路径是 <code>C:\ProgramData\Microsoft\Windows Defender\Scans\Quarantine</code>，可以右键恢复误杀的文件。</li>
+</ol>
+<p>如果只想查特定目录，例如 <code>D:\Downloads</code>，可以在「扫描选项」里选「自定义扫描」，把路径填进去。</p>
+<h3 id="方法-2-powershell-命令行调用-defender">方法 2：PowerShell 命令行调用 Defender</h3>
+<p>适合想写脚本、做定时任务、或者批量处理多台机器的场景。</p>
+<p>打开 PowerShell（右键开始菜单 →「终端」或「Windows PowerShell」），执行：</p>
+<pre><code class="language-powershell">Start-MpScan -ScanType FullScan</code></pre>
+<p>查看扫描状态：</p>
+<pre><code class="language-powershell">Get-MpComputerStatus | Select ScanType, QuickScanEndTime, FullScanEndTime, LastQuickScanEndTime, LastFullScanEndTime</code></pre>
+<p>只扫描指定目录：</p>
+<pre><code class="language-powershell">Start-MpScan -ScanType CustomScan -CustomScanPath &quot;D:\Downloads&quot;,&quot;E:\Temp&quot;</code></pre>
+<p>查看当前威胁数：</p>
+<pre><code class="language-powershell">Get-MpThreatDetection | Select ThreatID, ThreatName, InitialDetectionTime</code></pre>
+<p>如果想每 7 天自动跑一次，可以用 <code>Register-ScheduledTask</code> 注册一个计划任务，触发器设置为 <code>Weekly</code>，重复间隔 7 天。</p>
+<h3 id="方法-3-linux-下用-clamav">方法 3：Linux 下用 ClamAV</h3>
+<p>ClamAV 是开源的免费杀毒引擎，Ubuntu、Debian、CentOS 都支持。</p>
+<pre><code class="language-bash"># Ubuntu / Debian
+sudo apt update &amp;&amp; sudo apt install clamav clamav-daemon
+
+# CentOS / RHEL
+sudo yum install clamav clamav-update
+
+# 更新病毒库
+sudo freshclam
+
+# 扫描整个根目录（约 500 GB 硬盘，耗时 3–6 小时）
+sudo clamscan -r / --infected --log=/var/log/clamscan.log
+
+# 只扫描 /home 与 /tmp
+sudo clamscan -r /home /tmp --infected --log=/var/log/clamscan.log</code></pre>
+<p>常用参数：<code>-r</code> 递归，<code>--infected</code> 只输出感染文件，<code>--remove</code> 直接删除，<code>-i</code> 显示感染文件，<code>--max-filesize=250M</code> 限制单文件大小。</p>
+<p>扫描完成后查看日志：</p>
+<pre><code class="language-bash">grep -i &quot;INFECTED&quot; /var/log/clamscan.log</code></pre>
+<p>如果要把扫描做成每天凌晨 3 点自动执行，编辑 root 的 crontab：</p>
+<pre><code class="language-bash">sudo crontab -e
+# 加入
+0 3 * * * /usr/bin/clamscan -r /home --log=/var/log/clamscan.log &gt;&gt; /var/log/clamscan-cron.log 2&gt;&amp;1</code></pre>
+<h3 id="方法-4-离线启动盘扫描-应对顽固木马">方法 4：离线启动盘扫描（应对顽固木马）</h3>
+<p>有些木马会注入到系统启动项，导致杀毒软件根本跑不起来。这时需要用一个从外部启动的镜像来扫描。</p>
+<ol>
+<li>准备一个至少 16 GB 的 U 盘。</li>
+<li>在另一台干净电脑上，用「媒体创建工具」制作 Windows 安装 U 盘（下载约 5 GB，写入耗时 10–15 分钟）。</li>
+<li>把 U 盘插到待扫描的电脑上，开机按 <code>F12</code>、<code>F2</code> 或 <code>Del</code> 进入启动菜单，选择从 U 盘启动。</li>
+<li>进入安装界面后按 <code>Shift + F10</code> 调出命令提示符。</li>
+<li>执行：</li>
+</ol>
+<pre><code class="language-cmd">C:\Windows\System32\MpCmdRun.exe -Scan -ScanType 2 -Filepath E:\</code></pre>
+<p>其中 <code>-ScanType 2</code> 表示全盘扫描，<code>E:\</code> 是 Windows 安装盘在 WinPE 环境下的盘符（不一定是 E，先用 <code>dir</code> 确认）。扫描 500 GB 硬盘通常需要 2–3 小时。</p>
+<p>扫描完成后，感染文件的路径会打印在终端里，可以直接 <code>del</code> 删除。</p>
+<h3 id="方法-5-用-tcpdump-抓包看可疑外连">方法 5：用 tcpdump 抓包看可疑外连</h3>
+<p>有些木马不修改文件，而是常驻内存定期回连 C2 服务器。这时用网络层排查更直接。</p>
+<p>Linux 下：</p>
+<pre><code class="language-bash">sudo apt install tcpdump
+sudo tcpdump -i eth0 -n port 80 or port 443 or port 8080 -w /tmp/scan.pcap</code></pre>
+<p>参数含义：<code>-i eth0</code> 指定网卡，<code>-n</code> 不解析域名，<code>-w</code> 把结果写成 pcap 文件。抓包 5–10 分钟后 <code>Ctrl + C</code> 停止，用 Wireshark 打开分析。</p>
+<p>重点看：连接数异常多的目标 IP、非常规端口（例如 4444、8080、6667）、以及反复握手但无数据传输的会话。</p>
+<p>Windows 下可以用 PowerShell 的 <code>Get-NetTCPConnection</code>：</p>
+<pre><code class="language-powershell">Get-NetTCPConnection -State Established | Sort-Object RemotePort -Descending | Select -First 20</code></pre>
+<p>看到某个本地进程连向陌生的境外 IP，基本就是可疑外连。</p>
+<h3 id="方法-6-在线木马查杀-最省事的一种">方法 6：在线木马查杀（最省事的一种）</h3>
+<p>如果不想装任何软件、也不想跑几十分钟的扫描，可以把可疑文件直接上传到 opentrojan.com 在线分析。</p>
+<ol>
+<li>打开浏览器，进入网站，把文件拖到上传区（单文件上限 100 MB，超过的要分卷或本地先扫描）。</li>
+<li>点击「开始分析」，等待 30 秒到 2 分钟（取决于文件数量和服务器负载）。</li>
+<li>结果页会显示：文件哈希（MD5 / SHA1 / SHA256）、检测引擎命中数（例如 24/71 命中）、威胁类型（Trojan.Generic、Backdoor.Agent 等）、行为分析（是否写注册表、是否创建计划任务、是否连接外部 IP）。</li>
+<li>如果命中数超过 5/71，基本可以判定为木马，直接删除原文件；如果命中数为 0，也不代表 100% 安全，建议再用方法 1 或方法 3 交叉验证一次。</li>
+</ol>
+<p>在线方式适合：怀疑某个下载包、某个 exe、某个 apk 是不是木马，或者只是想快速比对文件哈希。它不能替代全盘扫描，但作为第一步排查非常省事。</p>
+<h2 id="方法对比表">方法对比表</h2>
+<table><thead><tr><th>方法</th><th>适合场景</th><th>是否需要装软件</th><th>耗时</th></tr></thead><tbody>
+<tr><td>Windows Defender 全盘扫描</td><td>Windows 日常木马查杀</td><td>否（系统自带）</td><td>45–90 分钟</td></tr>
+<tr><td>PowerShell 命令行</td><td>批量、定时、脚本化</td><td>否（系统自带）</td><td>45–90 分钟</td></tr>
+<tr><td>ClamAV</td><td>Linux 服务器、桌面</td><td>是（apt/yum）</td><td>3–6 小时</td></tr>
+<tr><td>离线启动盘扫描</td><td>顽固木马、杀软被禁用</td><td>是（16 GB U 盘）</td><td>2–3 小时</td></tr>
+<tr><td>tcpdump 抓包</td><td>排查可疑外连、C2 回连</td><td>是（tcpdump）</td><td>5–10 分钟</td></tr>
+<tr><td>在线木马查杀</td><td>单个可疑文件快速判定</td><td>否（浏览器）</td><td>1–5 分钟</td></tr>
+</tbody></table>
+<h2 id="常见问题">常见问题</h2>
+<p><strong>Q1：这些方法能查出隐藏的 rootkit 吗？</strong></p>
+<p>普通全盘扫描对文件型木马有效，但对驱动级 rootkit 覆盖有限。rootkit 通常要配合方法 4（离线启动盘扫描）或者用专门的 rootkit 检测工具（例如 rkhunter、chkrootkit）才能定位。判断依据是：如果全盘扫描报 0 感染但系统行为异常（例如 CPU 常驻 30% 以上、网络流量异常、任务管理器看不到可疑进程），大概率是 rootkit。</p>
+<p><strong>Q2：扫描完是不是就万事大吉了？</strong></p>
+<p>不是。木马查杀至少要覆盖三个层面：文件层（全盘扫描）、内存层（进程与驱动）、网络层（外连 IP）。建议至少跑一次全盘扫描 + 一次 tcpdump 抓包，再手动检查 <code>C:\Windows\System32\drivers</code> 与 <code>C:\Windows\Tasks</code> 目录里有没有陌生文件。</p>
+<p><strong>Q3：在线木马查杀够不够用？</strong></p>
+<p>只够用来判定单个文件。它不能扫描整个磁盘，也不能发现内存马和 rootkit。适合的场景是：从网上下载了一个 exe，不确定能不能打开，先传上去看看哈希和检测命中数。</p>
+<p><strong>Q4：木马查杀需要多久做一次？</strong></p>
+<p>日常建议每 2–4 周跑一次全盘扫描。Windows Defender 默认每 7 天做一次快速扫描，可以手动改成全盘。Linux 服务器可以用 cron 每天凌晨 3 点跑一次 ClamAV。</p>
+<p><strong>Q5：杀毒软件本身被木马禁用了怎么办？</strong></p>
+<p>三种办法：一是进安全模式（开机按 <code>F8</code> 或在设置里选「高级启动」→「疑难解答」→「高级选项」→「启动设置」→ 选 4 或 5），安全模式下大部分木马不会加载；二是用方法 4 的离线启动盘，从外部系统扫描；三是用另一台干净电脑制作一个 Linux Live USB，挂载原硬盘扫描。</p>
+<p>木马查杀这件事，工具只是入口，思路才是关键。日常场景下 Windows Defender 或 ClamAV 一次全盘扫描就能解决大部分问题；遇到顽固木马就切换到离线启动盘；怀疑有 C2 回连就抓包看网络；只想知道某个文件是不是木马就用在线方式快速判定。把这 6 种方法按场景挑一两个组合起来用，基本能覆盖 95% 以上的木马查杀需求。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#trojan">trojan</a><a class="tag" href="/tags.html#malware">malware</a><a class="tag" href="/tags.html#antivirus">antivirus</a><a class="tag" href="/tags.html#scan">scan</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
