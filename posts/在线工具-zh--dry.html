@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>在线工具？快速就能上手的五种方法</title><link rel="stylesheet" href="/assets/style.css"><link rel="alternate" type="application/rss+xml" title="RSS" href="/rss.xml"></head><body><header class="site"><div class="wrap"><a class="brand" href="/">Bing Blog</a><nav><a href="/">文章</a><a href="/tags.html">标签</a><a href="/about.html">关于</a><a href="/rss.xml">RSS</a></nav></div></header><main class="wrap"><h1>在线工具？快速就能上手的五种方法</h1><div class="meta">2026-11-26</div><article><h1 id="在线工具-快速就能上手的五种方法">在线工具？快速就能上手的五种方法</h1>
+<p>处理文件转换、截图、文本提取这类小事，最快的方法往往不是打开浏览器搜索某个网站，而是先看看手边已有的东西。系统自带的截图功能、命令行里现成的命令、常用软件里隐藏的选项，很多时候几秒钟就能搞定，根本不需要额外安装任何东西。这篇文章把最省事的6种做法列出来，前5种用你电脑里现成的功能就能独立完成，最后一种是打开浏览器就能用的在线工具，适合手头没有任何可用软件的时候。</p>
+<h2 id="五种方法">五种方法</h2>
+<h3 id="方法一-系统自带截图工具-windows-和-macos">方法一：系统自带截图工具（Windows 和 macOS）</h3>
+<p>Windows 11 的截图工具（Snipping Tool）可以完成区域截图、窗口截图、延时截图和全屏截图。按下 <code>Win + Shift + S</code>，屏幕变暗后，直接用鼠标拖拽选择区域，截图会自动保存到剪贴板。如果要把截图保存成文件，打开截图工具，点击“新建”，选择截图模式（矩形、窗口、全屏或任意形状），完成截图后点击“保存”按钮，在保存对话框中选择 PNG 或 JPEG 格式。截图工具还支持“延时”功能，点击“延时”下拉菜单，选择 3 秒或 10 秒，可以给下拉菜单或右键菜单留出打开的时间。</p>
+<p>macOS 用户按下 <code>Cmd + Shift + 4</code>，鼠标变成十字光标，拖拽选择区域后松开鼠标，截图会自动保存到桌面，文件名为“屏幕快照 日期 时间.png”。如果只截取一个窗口，按下 <code>Cmd + Shift + 4</code> 后按一下空格键，鼠标变成相机图标，移动鼠标到目标窗口上，窗口会高亮显示，单击即可截取整个窗口。按下 <code>Cmd + Shift + 3</code> 直接截取全屏。</p>
+<h3 id="方法二-命令行工具-curl-下载文件">方法二：命令行工具 curl 下载文件</h3>
+<p>curl 是 Windows 10/11、macOS 和 Linux 系统自带的命令行工具，不需要额外安装。在终端（Windows 用命令提示符或 PowerShell，macOS 用“终端”App）中输入以下命令即可下载文件：</p>
+<pre><code>curl -L -o 文件名.zip &quot;https://example.com/file.zip&quot;</code></pre>
+<p>参数解释：<code>-L</code> 表示跟随重定向（很多下载链接会跳转一次），<code>-o</code> 指定保存的文件名。如果下载中断，加上 <code>-C -</code> 可以断点续传：</p>
+<pre><code>curl -L -C - -o 文件名.zip &quot;https://example.com/file.zip&quot;</code></pre>
+<p>curl 还可以查看 HTTP 响应头信息，排查链接是否有效：</p>
+<pre><code>curl -I https://example.com</code></pre>
+<p><code>-I</code> 只获取响应头，不下载内容。如果返回 <code>HTTP/1.1 200 OK</code> 表示链接正常，返回 <code>404</code> 表示文件不存在。</p>
+<h3 id="方法三-浏览器开发者工具提取网页数据">方法三：浏览器开发者工具提取网页数据</h3>
+<p>按 <code>F12</code> 或 <code>Ctrl + Shift + I</code>（macOS 为 <code>Cmd + Option + I</code>）打开浏览器开发者工具，可以提取网页上的文本、图片链接或接口返回的数据。以提取网页上所有图片链接为例，在“控制台”（Console）标签页中粘贴以下代码并回车：</p>
+<pre><code class="language-javascript">Array.from(document.images).map(img =&gt; img.src)</code></pre>
+<p>控制台会输出一个数组，包含当前页面上所有图片的完整 URL。如果只想提取某类元素的文本，比如所有标题，可以输入：</p>
+<pre><code class="language-javascript">Array.from(document.querySelectorAll('h1, h2, h3')).map(el =&gt; el.innerText)</code></pre>
+<p>对于动态加载的网页，切换到“网络”（Network）标签页，刷新页面，点击“Fetch/XHR”过滤器，可以看到接口请求。点击任意请求，在“响应”（Response）标签页中能看到接口返回的 JSON 数据，这些数据往往包含页面上展示的完整内容。右键点击请求，选择“Copy” → “Copy as cURL”，可以把该请求复制为 curl 命令，在终端中直接执行。</p>
+<h3 id="方法四-excel-数据分列与文本合并">方法四：Excel 数据分列与文本合并</h3>
+<p>Excel 的“分列”功能可以把一列数据按分隔符拆分成多列。选中包含数据的列，点击“数据”选项卡 → “分列”，在向导第 1 步选择“分隔符号”或“固定宽度”，第 2 步选择分隔符（逗号、制表符、空格或自定义字符），第 3 步设置每列的数据格式（常规、文本、日期等），点击“完成”。例如，有一列数据“张三,25,北京”，按逗号分列后，会变成三列：张三、25、北京。</p>
+<p>反过来，把多列合并成一列，可以用 <code>TEXTJOIN</code> 函数。在目标单元格输入：</p>
+<pre><code>=TEXTJOIN(&quot;,&quot;, TRUE, A1:C1)</code></pre>
+<p>第一个参数是分隔符（这里用逗号），第二个参数 <code>TRUE</code> 表示忽略空单元格，第三个参数是合并的区域。这个函数在 Excel 2019 及更高版本中可用。如果要把多行文本合并到一个单元格，用 <code>TEXTJOIN(CHAR(10), TRUE, A1:A10)</code>，<code>CHAR(10)</code> 是换行符。</p>
+<h3 id="方法五-python-脚本批量重命名文件">方法五：Python 脚本批量重命名文件</h3>
+<p>Windows、macOS 和 Linux 都自带 Python 3（Windows 在“设置” → “应用” → “可选功能”中安装，macOS 和 Linux 默认自带）。用 Python 批量重命名文件，可以写一个简单脚本。在终端中进入文件所在目录，执行以下命令：</p>
+<pre><code class="language-bash">python3 -c &quot;
+import os
+for i, f in enumerate(os.listdir('.')):
+ if f.endswith('.jpg'):
+ os.rename(f, f'photo_{i:03d}.jpg')
+&quot;</code></pre>
+<p>这段代码会把当前目录下所有 <code>.jpg</code> 文件重命名为 <code>photo_001.jpg</code>、<code>photo_002.jpg</code>……<code>i:03d</code> 表示编号补足 3 位，不足补零。如果要把所有文件按修改时间排序后重命名，可以加上 <code>os.path.getmtime</code> 排序：</p>
+<pre><code class="language-bash">python3 -c &quot;
+import os
+files = sorted(os.listdir('.'), key=lambda f: os.path.getmtime(f))
+for i, f in enumerate(files):
+ if os.path.isfile(f):
+ os.rename(f, f'file_{i:03d}{os.path.splitext(f)[1]}')
+&quot;</code></pre>
+<h2 id="方法对比表">方法对比表</h2>
+<table><thead><tr><th>方法</th><th>适合场景</th><th>是否需要装软件</th><th>耗时</th></tr></thead><tbody>
+<tr><td>系统自带截图工具</td><td>截取屏幕、窗口、菜单</td><td>不需要（系统自带）</td><td>几秒</td></tr>
+<tr><td>curl 命令行</td><td>下载文件、查看响应头</td><td>不需要（系统自带）</td><td>几秒到几分钟</td></tr>
+<tr><td>浏览器开发者工具</td><td>提取网页数据、查看接口</td><td>不需要（浏览器自带）</td><td>1~2 分钟</td></tr>
+<tr><td>Excel 分列 / TEXTJOIN</td><td>处理表格数据、拆分或合并文本</td><td>需要 Excel（多数办公电脑已装）</td><td>1~3 分钟</td></tr>
+<tr><td>Python 脚本</td><td>批量重命名、自动化文件操作</td><td>需要 Python 3（多数系统自带）</td><td>1~5 分钟</td></tr>
+</tbody></table>
+<h2 id="结尾">结尾</h2>
+<p>这 五种方法覆盖了日常工作中最常见的文件处理场景：截图、下载、数据提取、表格整理、批量重命名和临时文件转换。前 5 种用系统自带功能或常用软件就能完成，不需要额外安装工具；最后一种打开浏览器就能用，适合手头没有可用软件或不想配置环境的时候。实际使用时，先判断任务类型，再选择对应的方法，多数情况下几分钟内就能完成，不需要专门去下载一个软件。</p></article><p style="margin-top:32px"><a class="tag" href="/tags.html#onlinetools">onlinetools</a><a class="tag" href="/tags.html#productivity">productivity</a><a class="tag" href="/tags.html#tutorial">tutorial</a><a class="tag" href="/tags.html#efficiency">efficiency</a></p></main><footer class="site"><div class="wrap">静态博客 · 内容来自 content/articles</div></footer></body></html>
